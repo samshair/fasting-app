@@ -1,0 +1,360 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vasten Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap; /* Kolommen wrappen op kleinere schermen */
+            width: 90%; /* Gebruik meer schermbreedte */
+            max-width: 1200px;
+            background: #111111;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+        }
+        .column {
+            flex: 1;
+            padding: 20px;
+            min-width: 300px; /* Voorkom te smalle kolommen */
+        }
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1, h2 {
+            color: #ff6600;
+            font-size: 2.5em;
+            margin: 20px 0;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px 0;
+            cursor: pointer;
+            background-color: #ff6600;
+            color: #ffffff;
+            border: none;
+            font-size: 1.5em;
+            border-radius: 5px;
+            width: 100%; /* Volledige breedte op kleinere schermen */
+        }
+        #stopButton {
+            background-color: #ff0000;
+        }
+        p {
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+            text-align: left;
+        }
+        li {
+            background: #333333;
+            margin: 10px 0;
+            padding: 15px;
+            color: #00aaff;
+            font-size: 1.2em;
+            border-radius: 5px;
+        }
+        #timer, #countdown {
+            color: #00aaff;
+            font-size: 1.5em;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .target-section, .start-time-section, .state-section {
+            margin: 20px 0;
+            width: 100%;
+            text-align: left;
+        }
+        .target-section label, .start-time-section label, .state-section label {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        .quick-start-buttons {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .quickStart {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #ff6600;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            border-radius: 5px;
+            flex: 1; /* Flexibele quick-start knoppen */
+        }
+        input[type="number"], input[type="datetime-local"], select {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: none;
+            background-color: #333333;
+            color: #ffffff;
+            width: 100%; /* Volledige breedte voor invoervelden */
+            box-sizing: border-box; /* Padding in breedte meenemen */
+        }
+        #stateLog li {
+            background: #333333;
+            margin: 5px 0;
+            padding: 10px;
+            color: #00aaff;
+        }
+        /* Media query voor kleinere schermen */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column; /* Stapel kolommen */
+            }
+            .column {
+                padding: 10px; /* Minder padding */
+            }
+            h1, h2 {
+                font-size: 2em; /* Kleinere koppen */
+            }
+            button {
+                font-size: 1.2em; /* Kleinere knoppen */
+                padding: 10px 20px;
+            }
+            p, li, #timer, #countdown {
+                font-size: 1.2em; /* Kleinere tekst */
+            }
+            .quickStart {
+                font-size: 0.9em; /* Kleinere quick-start knoppen */
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="column left-column">
+            <h1>Vasten Tracker</h1>
+            <div class="target-section">
+                <label for="targetDuration">Doel vasten (uren):</label>
+                <input type="number" id="targetDuration" min="1" placeholder="Bijv. 16">
+                <div class="quick-start-buttons">
+                    <button class="quickStart" data-hours="16">16 uur</button>
+                    <button class="quickStart" data-hours="24">24 uur</button>
+                </div>
+            </div>
+            <button id="startButton">Start Vasten</button>
+            <button id="stopButton" style="display:none;">Stop Vasten</button>
+            <p>Verstreken tijd: <span id="timer">0 uur 0 minuten 0 seconden</span></p>
+            <p>Resterende tijd: <span id="countdown">Niet ingesteld</span></p>
+            <div class="start-time-section">
+                <label for="startTimeInput">Starttijd aanpassen:</label>
+                <input type="datetime-local" id="startTimeInput">
+            </div>
+            <div class="state-section">
+                <label for="stateSelect">Hoe voel je je?</label>
+                <select id="stateSelect">
+                    <option value="">Selecteer</option>
+                    <option value="Energiek">Energiek</option>
+                    <option value="Beetje honger">Beetje honger</option>
+                    <option value="Moe">Moe</option>
+                </select>
+                <button id="logStateButton">Log</button>
+            </div>
+            <h2>Statistieken</h2>
+            <p>Totaal vasten deze week: <span id="totalWeek">0</span> uur</p>
+            <p>Langste vasten: <span id="longestFast">0</span> uur</p>
+            <h2>Logboek</h2>
+            <ul id="stateLog"></ul>
+        </div>
+        <div class="column">
+            <h2>Tijdlijn Voordelen</h2>
+            <ul>
+                <li><strong>4-6 uur:</strong> Glucose uit laatste maaltijd verbruikt. Insulinelevels dalen.</li>
+                <li><strong>12 uur:</strong> Glycogeenvoorraden uitgeput. Vetverbranding begint.</li>
+                <li><strong>16-18 uur:</strong> Autofagie start: celreparatie en opruiming van beschadigde cellen.</li>
+                <li><strong>24 uur:</strong> Diepe ketose: vet is primaire energiebron. Ontstekingsmarkers dalen.</li>
+                <li><strong>48 uur:</strong> Toename van HGH, immuunsysteemreset, en maximale vetverbranding.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let startTime;
+        let timerInterval;
+        let targetDuration; // in milliseconden
+        const fastingPhases = [
+            { min: 0, max: 4 * 3600000, color: 'blue' },           // 0-4 uur
+            { min: 4 * 3600000, max: 12 * 3600000, color: 'green' }, // 4-12 uur
+            { min: 12 * 3600000, max: 24 * 3600000, color: 'orange' }, // 12-24 uur
+            { min: 24 * 3600000, max: Infinity, color: 'red' }      // 24+ uur
+        ];
+
+        // Event listeners
+        document.getElementById('startButton').addEventListener('click', startFasting);
+        document.querySelectorAll('.quickStart').forEach(button => {
+            button.addEventListener('click', function() {
+                const hours = this.getAttribute('data-hours');
+                document.getElementById('targetDuration').value = hours;
+                startFasting();
+            });
+        });
+        document.getElementById('stopButton').addEventListener('click', stopFasting);
+        document.getElementById('startTimeInput').addEventListener('change', adjustStartTime);
+        document.getElementById('logStateButton').addEventListener('click', logState);
+
+        // Start vasten
+        function startFasting() {
+            const targetHours = document.getElementById('targetDuration').value;
+            targetDuration = targetHours ? targetHours * 3600000 : null;
+            startTime = new Date();
+            localStorage.setItem('ongoingFasting', JSON.stringify({ startTime: startTime.toISOString(), targetDuration }));
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            document.getElementById('startButton').textContent = "Herstart Vasten";
+            document.getElementById('stopButton').style.display = 'block';
+        }
+
+        // Stop vasten
+        function stopFasting() {
+            clearInterval(timerInterval);
+            const endTime = new Date();
+            saveFastingSession(startTime, endTime);
+            localStorage.removeItem('ongoingFasting');
+            updateStatistics();
+            document.getElementById('stopButton').style.display = 'none';
+            document.getElementById('startButton').textContent = "Start Vasten";
+            document.getElementById('timer').textContent = "0 uur 0 minuten 0 seconden";
+            document.getElementById('countdown').textContent = "Niet ingesteld";
+            document.getElementById('timer').style.backgroundColor = '';
+        }
+
+        // Starttijd aanpassen
+        function adjustStartTime() {
+            const startTimeInput = document.getElementById('startTimeInput').value;
+            if (startTimeInput && localStorage.getItem('ongoingFasting')) {
+                startTime = new Date(startTimeInput);
+                const ongoing = JSON.parse(localStorage.getItem('ongoingFasting'));
+                ongoing.startTime = startTime.toISOString();
+                localStorage.setItem('ongoingFasting', JSON.stringify(ongoing));
+                updateTimer();
+            }
+        }
+
+        // Timer en displays bijwerken
+        function updateTimer() {
+            const now = new Date();
+            const elapsed = now - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('timer').textContent = `${hours} uur ${minutes} minuten ${seconds} seconden`;
+
+            // Resterende tijd bijwerken
+            if (targetDuration) {
+                const remaining = targetDuration - elapsed;
+                if (remaining > 0) {
+                    const remainingHours = Math.floor(remaining / 3600000);
+                    const remainingMinutes = Math.floor((remaining % 3600000) / 60000);
+                    const remainingSeconds = Math.floor((remaining % 60000) / 1000);
+                    document.getElementById('countdown').textContent = `${remainingHours} uur ${remainingMinutes} minuten ${remainingSeconds} seconden`;
+                } else {
+                    document.getElementById('countdown').textContent = "Doel bereikt!";
+                }
+            } else {
+                document.getElementById('countdown').textContent = "Geen doel ingesteld";
+            }
+
+            // Fasekleur bijwerken
+            const phase = fastingPhases.find(phase => elapsed >= phase.min && elapsed < phase.max);
+            if (phase) {
+                document.getElementById('timer').style.backgroundColor = phase.color;
+            }
+        }
+
+        // Energie/hongerstatus loggen
+        function logState() {
+            const state = document.getElementById('stateSelect').value;
+            if (state) {
+                const logEntry = { time: new Date().toLocaleString(), state };
+                let log = JSON.parse(localStorage.getItem('stateLog')) || [];
+                log.push(logEntry);
+                localStorage.setItem('stateLog', JSON.stringify(log));
+                displayStateLog();
+            }
+        }
+
+        // Logboek weergeven
+        function displayStateLog() {
+            const log = JSON.parse(localStorage.getItem('stateLog')) || [];
+            const logList = document.getElementById('stateLog');
+            logList.innerHTML = '';
+            log.forEach(entry => {
+                const li = document.createElement('li');
+                li.textContent = `${entry.time}: ${entry.state}`;
+                logList.appendChild(li);
+            });
+        }
+
+        // Vastsessie opslaan
+        function saveFastingSession(start, end) {
+            let sessions = JSON.parse(localStorage.getItem('fastingSessions')) || [];
+            sessions.push({ start: start.toISOString(), end: end.toISOString() });
+            localStorage.setItem('fastingSessions', JSON.stringify(sessions));
+        }
+
+        // Statistieken bijwerken
+        function updateStatistics() {
+            const sessions = JSON.parse(localStorage.getItem('fastingSessions')) || [];
+            let totalWeek = 0;
+            let longestFast = 0;
+            const now = new Date();
+            const weekAgo = new Date(now - 7 * 24 * 3600000);
+
+            sessions.forEach(session => {
+                const start = new Date(session.start);
+                const end = new Date(session.end);
+                const duration = end - start;
+                if (duration > longestFast) longestFast = duration;
+                if (start >= weekAgo) totalWeek += duration;
+            });
+
+            document.getElementById('totalWeek').textContent = (totalWeek / 3600000).toFixed(1);
+            document.getElementById('longestFast').textContent = (longestFast / 3600000).toFixed(1);
+        }
+
+        // Initialiseren bij laden pagina
+        window.addEventListener('load', () => {
+            displayStateLog();
+            updateStatistics();
+            const ongoing = JSON.parse(localStorage.getItem('ongoingFasting'));
+            if (ongoing) {
+                startTime = new Date(ongoing.startTime);
+                targetDuration = ongoing.targetDuration;
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+                document.getElementById('startButton').textContent = "Herstart Vasten";
+                document.getElementById('stopButton').style.display = 'block';
+                if (targetDuration) {
+                    document.getElementById('targetDuration').value = targetDuration / 3600000;
+                }
+                document.getElementById('startTimeInput').value = startTime.toISOString().slice(0,16);
+            }
+        });
+    </script>
+</body>
+</html>
